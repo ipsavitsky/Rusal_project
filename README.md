@@ -1,28 +1,28 @@
-## Rusal_project ##
+# Rusal_project #
 
-# convertions
+## convertions
 * all_in_one.c - генерирование wad.txt файла из index - файла в директории
 * OTB.c - преобразование физических координат в координаты картинки - массива
 
-# database
+## database
 * database.c - создание дерева директории по содержимому файлов
 
-# handler
+## handler
 * handler.go - программа для вывода ошибок датчиков
 * gui/* - gui версия программы на Qt
 
-# select
+## select
 * select.c - программа для создания модифицированных SELECT-запросов по данным в дереве директорий
 * gui/* - gui версия программы
 
-# server
+## server
 * server.go - сервер для приема данных с Arduino
 
-# simulation
+## simulation
 * roads.c - программа по генерированию пути по данномы input.txt с информацией о машинах и дорогах
 
-# tracker и tracker_go
+## tracker и tracker_go
 * код для Arduino для серверов на php и go соответственно
 
-# logistics
+## logistics
 * анализ "пробок" в движении машин
