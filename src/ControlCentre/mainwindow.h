@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGraphicsScene>
 
 namespace Ui {
 class MainWindow;
@@ -25,6 +26,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QGraphicsScene *scene = new QGraphicsScene(this);
 };
 
 

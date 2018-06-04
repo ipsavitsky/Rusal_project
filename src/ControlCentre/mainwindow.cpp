@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QDebug>
 #include <QFile>
+#include <QGraphicsItem>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -42,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui -> handler -> append("Welcome to the control centre!");
     //ui -> statusBar -> showMessage("0");
+    QImage logo("./logo.bmp");
+    scene -> addPixmap(QPixmap::fromImage(logo));
+    ui -> map -> setScene(scene);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer -> start(500);
@@ -67,10 +71,13 @@ void MainWindow::update(){
     QImage map1("./resources/map1/test_1.bmp");
     QImage map2("./resources/map2/test_1.bmp");
     QImage map3("./resources/map3/test_1.bmp");
-    QGraphicsScene *scene = new QGraphicsScene(this);
+    QGraphicsItem *item = scene -> items().at(0);
+    scene -> removeItem(item);
+    delete item;
     if(ui -> map_1_radio -> isChecked()){
         scene -> addPixmap(QPixmap::fromImage(map1));
         ui -> statusBar -> showMessage("map 1 set");
+        //qDebug() << "map 1 set";
     }
     if(ui -> map_2_radio -> isChecked()){
         scene -> addPixmap(QPixmap::fromImage(map2));
@@ -81,6 +88,7 @@ void MainWindow::update(){
         ui -> statusBar -> showMessage("map 3 set");
     }
     ui -> map -> setScene(scene);
+    //qDebug() << "scene set";
     if(ui -> RTUpdates -> isChecked()){
         realTimeProcess();
     }
@@ -159,7 +167,6 @@ void MainWindow::handleErr(){
         QDateTime datetime = QDateTime::fromString(chunks.at(2).mid(0, 17), "yy/MM/dd,hh:mm:ss");
         //add 7 hours(Krasnoyarsk is GMT+7)
         datetime.addSecs(7*60*60);
-        //if the checkbox is checked, erase the directory after displaying the entrys
         if(chunks.at(1) == "DATA"){
             ui -> handler -> append("This is a data error at #" + chunks.at(3).chopped(1) + " at " + datetime.toString("yy/MM/dd,hh:mm:ss") + " GMT+7");
         }
