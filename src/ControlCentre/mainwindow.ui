@@ -75,13 +75,13 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>790</x>
-      <y>60</y>
-      <width>260</width>
-      <height>256</height>
+      <x>740</x>
+      <y>70</y>
+      <width>332</width>
+      <height>191</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -127,7 +127,28 @@
             </widget>
            </item>
            <item>
-            <widget class="QTimeEdit" name="timeEdit">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>from</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTimeEdit" name="timeEditFrom">
+             <property name="displayFormat">
+              <string>hh:mm:ss</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>to</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTimeEdit" name="timeEditTo">
              <property name="displayFormat">
               <string>hh:mm:ss</string>
              </property>
@@ -169,28 +190,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QRadioButton" name="map_1_radio">
-         <property name="text">
-          <string>Map 1</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="map_2_radio">
-         <property name="text">
-          <string>Map 2</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="map_3_radio">
-         <property name="text">
-          <string>Map 3</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="comboBox"/>
        </item>
       </layout>
      </item>

@@ -11,33 +11,23 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    QDir resources1("./resources/map1");
-    QDir resources2("./resources/map2");
-    QDir resources3("./resources/map3");
     QDir bin("./");
     QString errors("");
+    QDir resources("./resources");
+    QStringList resdir = resources.entryList();
+    resdir.removeFirst();
+    resdir.removeFirst();
     if(!bin.entryList().contains("database"))
         errors.append("There is no database installed\n");
     if(!bin.entryList().contains("fste.out"))
         errors.append("There is no fste.out");
-    //if(!resources1.entryList().contains("fste.out"))
-    //    errors.append("There is no fste.out for map_1 installed\n");
-    //if(!resources2.entryList().contains("fste.out"))
-    //    errors.append("There is no fste.out for map_2 installed\n");
-    //if(!resources3.entryList().contains("fste.out"))
-    //    errors.append("There is no fste.out for map_3 installed\n");
-    if(!resources1.entryList().contains("test.bmp"))
-        errors.append("There is no base map for map_1\n");
-    if(!resources2.entryList().contains("test.bmp"))
-        errors.append("There is no base map for map_2\n");
-    if(!resources3.entryList().contains("test.bmp"))
-        errors.append("There is no base map for map_3\n");
-    if(!resources1.entryList().contains("coor.txt"))
-        errors.append("There is no coordinates configuration for map_1\n");
-    if(!resources2.entryList().contains("coor.txt"))
-        errors.append("There is no coordinates configuration for map_2\n");
-    if(!resources3.entryList().contains("coor.txt"))
-        errors.append("There is no coordinates configuration for map_3\n");
+    for(int i = 0; i < resdir.count(); i++){
+        QDir curRes("./resources/"+resdir.at(i));
+        if(!curRes.entryList().contains("test.bmp"))
+            errors.append("There is no test.bmp in " + resources.entryList().at(i) + "resources folder \n");
+        if(!curRes.entryList().contains("coor.txt"))
+            errors.append("There is no coor.txt in " + resources.entryList().at(i) + "resources folder \n");
+    }
     if(errors != "")
         QMessageBox::critical(this, "ERROR", errors);
     ui->setupUi(this);
@@ -46,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QImage logo("./logo.bmp");
     scene -> addPixmap(QPixmap::fromImage(logo));
     ui -> map -> setScene(scene);
+    ui -> comboBox -> addItems(resdir);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer -> start(500);
@@ -68,25 +59,13 @@ void MainWindow::on_clr_button_clicked()
 }
 
 void MainWindow::update(){
-    QImage map1("./resources/map1/test_1.bmp");
-    QImage map2("./resources/map2/test_1.bmp");
-    QImage map3("./resources/map3/test_1.bmp");
+    //QDir resources("./resources");
+    QString curItem = ui -> comboBox -> currentText();
     QGraphicsItem *item = scene -> items().at(0);
     scene -> removeItem(item);
     delete item;
-    if(ui -> map_1_radio -> isChecked()){
-        scene -> addPixmap(QPixmap::fromImage(map1));
-        ui -> statusBar -> showMessage("map 1 set");
-        //qDebug() << "map 1 set";
-    }
-    if(ui -> map_2_radio -> isChecked()){
-        scene -> addPixmap(QPixmap::fromImage(map2));
-        ui -> statusBar -> showMessage("map 2 set");
-    }
-    if(ui -> map_3_radio -> isChecked()){
-        scene -> addPixmap(QPixmap::fromImage(map3));
-        ui -> statusBar -> showMessage("map 3 set");
-    }
+    QImage map("./resources/"+curItem+"/test_1.bmp");
+    scene -> addPixmap(QPixmap::fromImage(map));
     ui -> map -> setScene(scene);
     //qDebug() << "scene set";
     if(ui -> RTUpdates -> isChecked()){
@@ -94,15 +73,10 @@ void MainWindow::update(){
     }
     handleErr();
     system("./database");
-    if(ui -> map_1_radio -> isChecked()){
-        system("./fste.out 1");
-    }
-    if(ui -> map_2_radio -> isChecked()){
-        system("./fste.out 2");
-    }
-    if(ui -> map_3_radio -> isChecked()){
-        system("./fste.out 3");
-    }
+    QString prompt("./fste.out ./resources/"+curItem);
+    QByteArray ba = prompt.toLatin1();
+    const char *c_str = ba.data();
+    system(c_str);
 }
 
 void MainWindow::on_show_button_clicked()
@@ -116,14 +90,16 @@ void MainWindow::on_show_button_clicked()
     }
     QString IMEI("");
     QString Date("");
-    QString Time("");
+    QString fromTime("");
+    QString toTime("");
     if(ui -> IMEI_chk -> isChecked()){
         IMEI = ui -> IMEI_ln -> text();
         qDebug() << "IMEI =" << IMEI;
     }
     if(ui -> Time_chk -> isChecked()){
-        Time = ui -> timeEdit -> time().toString();
-        qDebug() << "Time =" << Time;
+        fromTime = ui -> timeEditFrom -> time().toString();
+        toTime = ui -> timeEditTo -> time().toString();
+        qDebug() << "Time =" << fromTime << "-" << toTime;
     }
     if(ui -> Date_chk -> isChecked()){
         Date = ui -> dateEdit -> date().toString("dd.MM.yyyy");
@@ -132,19 +108,20 @@ void MainWindow::on_show_button_clicked()
     QFile outf("indexRequest.txt");
     if(outf.open(QFile::WriteOnly | QFile::Truncate)){
         QTextStream out(&outf);
+        QStringList prompt;
         while(!indexFile.atEnd()){
             QString curline(indexFile.readLine());
             //parse the query with TIME, DATE and IMEI statements
             QStringList parts = curline.split("/");
-            QString prompt("");
-            if(((parts.at(2) == IMEI) || (IMEI == "")) && ((parts.at(3) == Date) || (Date == "")) && ((parts.at(4) == Time + ".txt\n") || (Time == ""))){
+            if(((parts.at(2) == IMEI) || (IMEI == "")) && ((parts.at(3) == Date) || (Date == "")) && (((parts.at(4) >= fromTime + ".txt\n") || (fromTime == "")) && ((parts.at(4) <= toTime + ".txt\n") || (toTime == "")))){
                 //ui -> handler -> append(curline.chopped(1));
                 prompt.append(curline.chopped(1) + "\n");
                 //out << curline.chopped(1) << "\n";
             }
-            out << curline.count() << "\n";
-            out << prompt;
         }
+        //qDebug()<<prompt;
+        out << prompt.size() << "\n";
+        out << prompt.join("");
     }
     //ui -> handler -> append("#######################################");
 }
