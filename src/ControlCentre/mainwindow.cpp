@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QGraphicsItem>
+#include "add_new_map.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -66,6 +67,7 @@ void MainWindow::update(){
     delete item;
     QImage map("./resources/"+curItem+"/test_1.bmp");
     scene -> addPixmap(QPixmap::fromImage(map));
+    ui -> map -> fitInView(scene -> sceneRect(), Qt::KeepAspectRatio);
     ui -> map -> setScene(scene);
     //qDebug() << "scene set";
     if(ui -> RTUpdates -> isChecked()){
@@ -164,4 +166,11 @@ void MainWindow::realTimeProcess(){
     QStringList datal = data.split("\n");
     ReqSt << datal.count() << "\n";
     ReqSt << data;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    add_new_map window;
+    window.setModal(true);
+    window.exec();
 }

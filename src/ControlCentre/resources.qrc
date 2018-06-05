@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>Rusal_Logo.svg.png</file>
+    </qresource>
+</RCC>

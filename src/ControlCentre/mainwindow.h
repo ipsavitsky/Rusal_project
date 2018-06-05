@@ -24,6 +24,8 @@ private slots:
     void update();
     void on_show_button_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene = new QGraphicsScene(this);

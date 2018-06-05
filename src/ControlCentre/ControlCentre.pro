@@ -25,10 +25,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    add_new_map.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    add_new_map.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    add_new_map.ui
+
+RESOURCES += \
+    resources.qrc
