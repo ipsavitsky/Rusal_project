@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "add_new_map.h"
 #include <QDir>
 #include <QMessageBox>
 #include <QTimer>
 #include <QDebug>
 #include <QFile>
 #include <QGraphicsItem>
-#include "add_new_map.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
