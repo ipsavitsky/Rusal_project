@@ -127,7 +127,7 @@ void switchDates(int k){
 	//there is a lot happening, but this code just switches time
 	system("ls ./data > tmp");
 	names = fopen("tmp", "r");
-	printf("creating index files...");
+	//printf("creating index files...");
 	while(fscanf(names, "%s", filename) == 1){
 		if(strstr(filename, ".txt") == NULL || strcmp(filename, "indexIMEI.txt") == 0 || strcmp(filename, "indexDate.txt") == 0 || strcmp(filename, "indexTime.txt") == 0) continue;
 		date = calloc(0, sizeof(char)*16);
@@ -237,11 +237,11 @@ void mapFileSystem(){
 	names = fopen("tmp", "r");
 	prompt = malloc(128*sizeof(char));
 	cmd = malloc(64*sizeof(char));
-	printf("########################################\n");
-	while(fscanf(names, "%s", prompt) == 1){
-		printf("%s\n", prompt);
-	}
-	printf("########################################\n");
+	//printf("########################################\n");
+	//while(fscanf(names, "%s", prompt) == 1){
+		//printf("%s\n", prompt);
+	//}
+	//printf("########################################\n");
 	fclose(names);
 	names = fopen("tmp", "r");
 	filename = malloc(32*sizeof(char));
@@ -260,7 +260,7 @@ void mapFileSystem(){
 			system("rm ./indexTime.txt");
 			continue;
 		}
-		printf("parsing: %s\n", filename);
+		//printf("parsing: %s\n", filename);
 		clearBuff(nfilename);
 		sprintf(nfilename, "./data/%s", filename);
 		data = fopen(nfilename, "r");
@@ -272,13 +272,13 @@ void mapFileSystem(){
 		tmp0 = fopen("tmp0", "r");
 		if(!searchName(tmp0, tmp[0])){
 			clearBuff(cmd);
-			printf("could not find IMEI directory, creating ");
+			//printf("could not find IMEI directory, creating ");
 			sprintf(cmd, "mkdir ./data/%s", tmp[0]);
-			printf("./data/%s\n", tmp[0]);
+			//printf("./data/%s\n", tmp[0]);
 			system(cmd);
 		}
 		else{
-			printf("IMEI directory found!\n");
+			//printf("IMEI directory found!\n");
 		}
 		clearBuff(cmd);
 		sprintf(cmd, "ls ./data/%s > ./data/tmp1", tmp[0]);
@@ -288,26 +288,27 @@ void mapFileSystem(){
 		//printf("tmp1 formed\n");
 		if(!searchName(tmp1, tmp[1])){
 			clearBuff(cmd);
-			printf("could not find date directory, creating ");
+			//printf("could not find date directory, creating ");
 			sprintf(cmd, "mkdir ./data/%s/%s", tmp[0], tmp[1]);
-			printf("./data/%s/%s\n", tmp[0], tmp[1]);
+			//printf("./data/%s/%s\n", tmp[0], tmp[1]);
 			system(cmd);
 		}
 		else{
-			printf("date directory found\n");
+			//printf("date directory found\n");
 		}
 		clearBuff(cmd);
 		clearBuff(cmd);
 		sprintf(cmd, "mv ./data/%s ./data/%s/%s/%s.txt", filename, tmp[0], tmp[1], tmp[2]);
-		printf("moving %s from ./data/%s to ./data/%s/%s/%s.txt\n", filename, filename, tmp[0], tmp[1], tmp[2]);
+		//printf("moving %s from ./data/%s to ./data/%s/%s/%s.txt\n", filename, filename, tmp[0], tmp[1], tmp[2]);
 		system(cmd);
-		printf("########################################\n");
+		//printf("########################################\n");
 		free(tmp[0]);
 		free(tmp[1]);
 		free(tmp[2]);
 		free(tmp[3]);
 		free(tmp[4]);
 		free(tmp);
+		fclose(data);
 		system("rm tmp0");
 		system("rm ./data/tmp1");
 	}
