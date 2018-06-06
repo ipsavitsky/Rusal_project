@@ -53,7 +53,7 @@ int main(){
 	int ** twn;
 	FILE *f;
 	FILE *o;
-	f=fopen("input.txt","r");
+	f=fopen("inputt.txt","r");
 	o=fopen(name(),"w");
 	fscanf(f,"%d",&n);
 	nas=(int *)malloc(n*2*sizeof(int));
@@ -91,47 +91,31 @@ int main(){
 		rd[i][2]=(int)sqrt((pow(twn[rd[i][0]-1][0]-twn[rd[i][1]-1][0],2)+pow(twn[rd[i][0]-1][1]-twn[rd[i][1]-1][1],2)));
 		printf(">%d %d| %d %d| %d<",twn[rd[i][0]-1][0],twn[rd[i][1]-1][0],twn[rd[i][0]-1][1],twn[rd[i][1]-1][1],rd[i][2]);
 	}
+	int k;
+	fscanf(f,"%d",&k);
+	printf("%d",k);
 	//filling obj car
 	struct obj* car;
 	car=(struct obj*)malloc(sizeof(struct obj));
-	car->aim=(int *)malloc(15*sizeof(int));
-	car->aim[0]=0;
-	car->aim[1]=2;
-	car->aim[2]=4;
-	car->aim[3]=6;
-	car->aim[4]=8;
-	car->aim[5]=10;
-	car->aim[6]=12;
-	car->aim[7]=14;
-	car->aim[8]=16;
-	car->aim[9]=18;
-	car->aim[10]=20;
-	car->aim[11]=22;
-	car->aim[12]=24;
-	car->aim[13]=26;
-	car->aim[14]=28;
-	car->v=5.;
-	car->pos=0.;
+	car->aim=(int *)malloc(k*sizeof(int));
+	for (i=0;i<k;i++){
+		fscanf(f,"%d",&car->aim[i]);
+		printf("%d",car->aim[i]);
+	}							
+	fscanf(f,"%lf",&car->v);
+	printf("%lf",car->v);
+	fscanf(f,"%lf",&car->pos);
+	printf("%lf",car->pos);	
 	car->i=0;
-	car->x=163;
-	car->y=665;
+	fscanf(f,"%lf",&car->x);
+	printf("%lf",car->x);
+	fscanf(f,"%lf",&car->y);
+	printf("%lf",car->y);
 	//moving process
-	while (car->i<14){
-		fprintf(o,"%f %f %d\n",(37.527053-37.523050)*((car->x)/1088)+37.523025, (55.695537-55.693967)*((700-(car->y))/700)+55.693967,tm);
+	while (car->i<k-1){
+		fprintf(o,"%f %f %d\n",car->x,car->y,tm);
 		tm+=1;
 		move(car,rd,twn);
 		change (car,twn,rd);
 	}
 }
-
-/*
-        левый нижний 55.693967, 37.523025
-        левый верхний 55.695537, 37.523050
-        правый верхний 55.695535, 37.527034
-        правый нижний 55.693965, 37.527053
-*/	
-	
-	
-	
-	
-		
