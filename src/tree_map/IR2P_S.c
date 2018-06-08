@@ -35,7 +35,7 @@ void s_bubblesort (char ** names, int count_files) {
 }	
 
 typedef struct track_point {
-	double x, y;
+	long double x, y;
 	int pic_x, pic_y;
 	char * date;
 	char * time;
@@ -50,13 +50,13 @@ typedef struct list {
 } list;
 
 typedef struct coor {								// структура 4 крайних точек карты
-	double x1, x2, x3, x4, y1, y2, y3, y4;
-	double lenght_top, lenght_left;
+	long double x1, x2, x3, x4, y1, y2, y3, y4;
+	long double lenght_bot, lenght_left;
 	int width, height;
 } coor;
 
 typedef struct step {
-	double up_x, up_y, right_x, right_y;
+	long double up_x, up_y, right_x, right_y;
 } step;
 
 list * List_init () {
@@ -71,7 +71,7 @@ list * List_init () {
 	return p;
 }
 
-void push_point (list * p, char * date, char * time, char * IMEI, double x, double y) {
+void push_point (list * p, char * date, char * time, char * IMEI, long double x, long double y) {
 		if (p == NULL) {
 			printf ("push_point: list doesn't exist\n");
 			exit (1);
@@ -142,7 +142,7 @@ int print_point (list * p) {
 	track_point * cur = p->head;
 	int res = 0;
 		for (i=1; i <= p->n; i++) {
-			res += printf ("%d: %lf %lf %d %d\n", i, cur->x, cur->y, cur->pic_x, cur->pic_y);
+			res += printf ("%d: %Lf %Lf %d %d\n", i, cur->x, cur->y, cur->pic_x, cur->pic_y);
 			cur = cur->next;
 		}
 	return res;
@@ -170,12 +170,12 @@ coor * Coor_init (char * arg) {
 			printf ("Coor_init: fscanf error\n");
 			exit (3);
 		}
-		if (fscanf (in, "%lf%lf%lf%lf%lf%lf%lf%lf", &(res->x1), &(res->y1), &(res->x2), &(res->y2), &(res->x3), &(res->y3), &(res->x4), &(res->y4)) != 8) {
+		if (fscanf (in, "%llf%llf%llf%llf%llf%llf%llf%llf", &(res->x1), &(res->y1), &(res->x2), &(res->y2), &(res->x3), &(res->y3), &(res->x4), &(res->y4)) != 8) {
 			printf ("Coor_init: fscanf error\n");
 			exit (3);
 		} 
-		res->lenght_left = sqrt ((res->x1 - res->x2)*(res->x1 - res->x2) + (res->y1 - res->y2)*(res->y1 - res->y2));
-		res->lenght_top = sqrt ((res->x1 - res->x3)*(res->x1 - res->x3) + (res->y1 - res->y3)*(res->y1 - res->y3));
+		res->lenght_left = sqrt ((res->x1 - res->x2)*(res->x1 - res->x2) + (res->y1 - res->y2)*(res->y1 - res->y2)*(cos(res->x1)+cos(res->x2))*(cos(res->x1)+cos(res->x2))/4);
+		res->lenght_bot = sqrt ((res->x2 - res->x4)*(res->x2 - res->x4) + (res->y2 - res->y4)*(res->y2 - res->y4)*(cos(res->x4)+cos(res->x2))*(cos(res->x4)+cos(res->x2))/4);
 		//printf ("	lenght_top: %lf\n	lenght_left: %lf\n", res->lenght_top, res->lenght_left);
 		free (dir);
 	return res;
@@ -190,15 +190,16 @@ void point_to_bmp_coor (track_point * point, coor * Coor) {
 			printf ("point_to_bmp_coor: Coor doesn't exist\n");
 			exit (1);
 		}
-	double l1 = sqrt ((Coor->x1 - point->x)*(Coor->x1 - point->x) + (Coor->y1 - point->y)*(Coor->y1 - point->y));
-	double l2 = sqrt ((Coor->x2 - point->x)*(Coor->x2 - point->x) + (Coor->y2 - point->y)*(Coor->y2 - point->y));
-	double l3 = sqrt ((Coor->x3 - point->x)*(Coor->x3 - point->x) + (Coor->y3 - point->y)*(Coor->y3 - point->y));
+	long double l1 = sqrtl ((Coor->x1 - point->x)*(Coor->x1 - point->x) + (Coor->y1 - point->y)*(Coor->y1 - point->y)*(cos(Coor->x1)+cos(point->x))*(cos(Coor->x1)+cos(point->x))/4);
+	long double l2 = sqrtl ((Coor->x2 - point->x)*(Coor->x2 - point->x) + (Coor->y2 - point->y)*(Coor->y2 - point->y)*(cos(Coor->x2)+cos(point->x))*(cos(Coor->x2)+cos(point->x))/4);
+	long double l4 = sqrtl ((Coor->x4 - point->x)*(Coor->x4 - point->x) + (Coor->y4 - point->y)*(Coor->y4 - point->y)*(cos(Coor->x4)+cos(point->x))*(cos(Coor->x4)+cos(point->x))/4);
 	double p1 = (Coor->lenght_left + l1 + l2)/2;
-	double p2 = (Coor->lenght_top + l1 + l3)/2;
+	double p2 = (Coor->lenght_bot + l2 + l4)/2;
 	double s1 = sqrt(p1*(p1 - Coor->lenght_left)*(p1 - l1)*(p1 - l2));
-	double s2 = sqrt(p2*(p2 - Coor->lenght_top)*(p2 - l1)*(p2 - l3));
-		point->pic_x = (2*s1/Coor->lenght_left)/Coor->lenght_top * Coor->width;
-		point->pic_y = Coor->height - (2*s2/Coor->lenght_top)/Coor->lenght_left * Coor->height;
+	double s2 = sqrt(p2*(p2 - Coor->lenght_bot)*(p2 - l2)*(p2 - l4));
+		//printf ("bmp:\n	l1: %lf l2: %lf l4: %lf\n	p1: %lf p2: %lf\n	s1: %lf s2: %lf\n", l1, l2, l4, p1, p2, s1, s2);
+		point->pic_x = 2 * s1 * Coor->width / Coor->lenght_left / Coor->lenght_bot;
+		point->pic_y = 2 * s2 * Coor->height / Coor->lenght_bot / Coor->lenght_left;
 	return;
 }
 
@@ -216,7 +217,7 @@ step * Step_init (coor * Coor) {
 		Step->up_y = (Coor->y1 - Coor->y2) / Coor->height;
 		Step->right_x = (Coor->x4 - Coor->x2) / Coor->width;
 		Step->right_y = (Coor->y4 - Coor->y2) / Coor->width;
-		printf ("\n	up_x: %lf	up_y: %lf\n	right_x: %lf	right_y: %lf\n\n", Step->up_x, Step->up_y, Step->right_x, Step->right_y);
+		printf ("\n	up_x: %llf	up_y: %llf\n	right_x: %llf	right_y: %llf\n\n", Step->up_x, Step->up_y, Step->right_x, Step->right_y);
 	return Step;
 }
 
@@ -257,83 +258,6 @@ char * malloc_char (int n) {
 		for(i=0;i<n;i++) mas[i]=0;
 	return mas;
 }
-
-/*int bmp_to_data(char * fdata, char * fbmp) {
-	int i, j, n, Height, Width;
-	char * mas;
-	FILE * in = fopen(fbmp,"r");
-	FILE * out = fopen(fdata,"w");
-	
-		if (in == NULL){
-			printf ("%s: %s doesn't exist\n", __FUNCTION__, fbmp);
-			exit(1);
-		}
-		if (out == NULL) {
-			printf ("%s: %s doesn't exist\n", __FUNCTION__, fbmp);
-			exit(1);
-		}
-		
-	unsigned char bm[54];       //Массив для хранения заголовка
-	unsigned int biWidth;           
-	unsigned int biHeight;   
-			fread((void *)bm, 1, 54, in);
-		//printf ("\n%s\n", bm);	
-			memcpy((void *)(&biWidth), (void*) (bm + 18), 4);
-			memcpy((void *)(&biHeight), (void*) (bm + 22), 4);
-		Width = biWidth;
-		Height = biHeight;
-		n = Height * Width * 3;
-			//printf("bp11\n%d\n", n);
-		mas = malloc_char (n);
-			fread((void *) mas, 1, n, in);
-			fprintf(out, "%d %d\n", Width, Height);
-			for(i = Height-1; i >= 0; i--) {
-				for(j = 0; j < Width; j++)
-					fprintf(out, "%4d %4d %4d  ", mas[i*3*Width + j*3+0], mas[i*3*Width + j*3+1], mas[i*3*Width + j*3+2]);
-				fprintf(out, "\n");
-			}
-		fclose (in);
-		fclose (out);
-	return 0;
-}
-
-FIELD * read_field (char * fdata) {
-	FIELD * field = (FIELD *) malloc (sizeof (FIELD));
-	int i, j, c1, c2, c3;
-	int Width, Height, N;
-	char * mas;
-	FILE * in = fopen (fdata, "r");
-	
-			if (in == NULL) {
-				printf("%s: %s doesn't exist\n", __FUNCTION__, fdata);
-				exit(1);
-			}
-			if (fscanf (in,"%d %d", &Width, &Height) != 2)  {
-				printf("%s: %s file error\n", __FUNCTION__, fdata);
-				exit(3);
-			}
-			if (Width <= 0 || Height <= 0) {
-				printf ("read_field: resolution error\n");
-				exit (4);
-			}
-			
-		N = Width * Height * 3;
-		field->Width = Width;
-		field->Height = Height;
-		field->field = malloc_char (N);
-		mas = field->field;
-	
-		for(i = Height-1; i >= 0; i--)
-			for(j=0; j<Width; j++) {
-				fscanf(in, "%d%d%d", &c1, &c2, &c3);
-				mas[i*3*Width + j*3+0] = c1;
-				mas[i*3*Width + j*3+1] = c2;
-				mas[i*3*Width + j*3+2] = c3;
-			}
-		
-		field->field = mas;
-	return field;
-}*/
 
 FIELD * make_field (char * fbmp) {
 	int height, width;
@@ -393,8 +317,8 @@ void Set_color (int x, int y, Color * color, FIELD * field) {
 		return;
 	int pos = 3 * (x + y * field->Width);
 		field->field[pos] = color->blue;
-		field->field[pos+1] = color->red;
-		field->field[pos+2] = color->green;
+		field->field[pos+1] = color->green;
+		field->field[pos+2] = color->red;
 	return;
 }	
 
@@ -447,6 +371,35 @@ void Line (int x0, int y0, int x1, int y1, Color * color, FIELD * field) {
 	return;	
 }
 
+void Circle (int cent_x, int cent_y, double r, double widness, Color * color, FIELD * field) {
+	int i, j, cur_x, cur_y, pos;
+	int R = r + widness;
+	double f_x, f_y;
+	
+		for (i = -R; i <= R; i++) {
+			cur_x = cent_x + i;
+			if (cur_x < field->Width && cur_x >= 0) {
+				for (j = -R; j <= R; j++) {
+					cur_y = cent_y + j;
+					if (cur_y < field->Height && cur_y >= 0) {
+						f_x = cur_x - cent_x;
+						f_y = cur_y - cent_y;
+						if (fabs (sqrt (f_x*f_x + f_y*f_y) - r) < widness) {
+							Set_color (cur_x, cur_y, color, field);
+							/*pos = cur_x + cur_y * field->Width;
+							pos *= 3;
+							field->field[pos] = color->blue;
+							field->field[pos+1] = color->red;
+							field->field[pos+2] = color->green;*/
+						}
+					}
+				}
+			}
+		}
+		
+	return;
+}
+
 int main (int argc, char * argv[]) {
 		if (argc != 2) {
 			printf ("wrong count of args\n");
@@ -465,29 +418,9 @@ int main (int argc, char * argv[]) {
 		
 		strcat (bmp_name, argv[1]);
 		strcat (bmp_name, "/test.bmp");
-		strcat (map_name, argv[1]);
-		strcat (map_name, "/test_1.bmp");
-	/*int argument = atoi (argv[1]);
-		switch (argument) {
-			case 1:
-					strcpy (bmp_name, "./resources/map1/test.bmp");
-					strcpy (new_bmp_name, "./resources/map1/test_1.bmp");
-					strcpy (map_name, "map1");
-				break;
-			case 2:
-					strcpy (bmp_name, "./resources/map2/test.bmp");
-					strcpy (new_bmp_name, "./resources/map2/test_1.bmp");
-					strcpy (map_name, "map2");
-				break;
-			case 3:
-					strcpy (bmp_name, "./resources/map3/test.bmp");
-					strcpy (new_bmp_name, "./resources/map3/test_1.bmp");
-					strcpy (map_name, "map3");
-				break;
-			default:
-					printf ("wrong arg\n");
-				return -2;
-		}*/
+		printf ("%s\n", bmp_name);
+		strcat (new_bmp_name, argv[1]);
+		strcat (new_bmp_name, "/test_1.bmp");
 		
 	FILE * tmp = fopen ("indexRequest.txt", "r");
 		if (tmp == NULL) {
@@ -535,7 +468,7 @@ int main (int argc, char * argv[]) {
 	char date[32];
 	char time[32];
 	char IMEI[32];
-	double x, y;
+	long double x, y;
 	int l;
 	list * points = List_init ();
 	char ** string = (char **) malloc (sizeof(char *) * count_files);
@@ -548,7 +481,7 @@ int main (int argc, char * argv[]) {
 			for (j=0; j<l; j++)
 				if (string[i][j] == '_')
 					string[i][j] = ' ';
-			sscanf (string[i], "%s%s%s%lf%lf", IMEI, date, time, &x, &y);
+			sscanf (string[i], "%s%s%s%Lf%Lf", IMEI, date, time, &x, &y);
 			push_point (points, date, time, IMEI, x, y);
 			fclose (in);
 		}
@@ -565,13 +498,15 @@ int main (int argc, char * argv[]) {
 
 	FIELD * field = make_field (bmp_name);
 		Color * color = (Color *) malloc (sizeof(Color));
-		color->red = 0;
+		color->red = 250;
 		color->green = 0;
 		color->blue = 0;
 		
 		cur = points->head;
+		Circle (cur->pic_x, cur->pic_y, 0.0, 3.0, color, field);
 		for (i=1; i<count_files; i++) {
 			Line (cur->pic_x, cur->pic_y, cur->next->pic_x, cur->next->pic_y, color, field);
+			Circle (cur->next->pic_x, cur->next->pic_y, 0.0, 3.0, color, field);
 			//printf ("line: from (%d;%d) to (%d;%d)\n", cur->pic_x, cur->pic_y, cur->next->pic_x, cur->next->pic_y);
 			cur = cur->next;
 		}
