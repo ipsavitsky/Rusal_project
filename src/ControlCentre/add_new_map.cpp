@@ -19,7 +19,7 @@ add_new_map::~add_new_map()
 
 void add_new_map::on_choose_file_button_clicked()
 {
-    QString bmpFilename = QFileDialog::getOpenFileName(this, "Open file...", "~", "Windows bitmap pictures (*.bmp);; All files (*.*)");
+    QString bmpFilename = QFileDialog::getOpenFileName(this, "Open file...", "~/../", "Windows bitmap pictures (*.bmp);; All files (*.*)");
     ui -> filename_edit -> setText(bmpFilename);
     QImage selectedImg(bmpFilename);
     ui -> height -> setValue(selectedImg.height());

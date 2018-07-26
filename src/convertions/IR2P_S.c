@@ -35,7 +35,7 @@ void s_bubblesort (char ** names, int count_files) {
 }	
 
 typedef struct track_point {
-	long double x, y;
+	double x, y;
 	int pic_x, pic_y;
 	char * date;
 	char * time;
@@ -50,13 +50,13 @@ typedef struct list {
 } list;
 
 typedef struct coor {								// структура 4 крайних точек карты
-	long double x1, x2, x3, x4, y1, y2, y3, y4;
-	long double lenght_bot, lenght_left;
+	double x1, x2, x3, x4, y1, y2, y3, y4;
+	double lenght_top, lenght_left;
 	int width, height;
 } coor;
 
 typedef struct step {
-	long double up_x, up_y, right_x, right_y;
+	double up_x, up_y, right_x, right_y;
 } step;
 
 list * List_init () {
@@ -71,7 +71,7 @@ list * List_init () {
 	return p;
 }
 
-void push_point (list * p, char * date, char * time, char * IMEI, long double x, long double y) {
+void push_point (list * p, char * date, char * time, char * IMEI, double x, double y) {
 		if (p == NULL) {
 			printf ("push_point: list doesn't exist\n");
 			exit (1);
@@ -142,7 +142,7 @@ int print_point (list * p) {
 	track_point * cur = p->head;
 	int res = 0;
 		for (i=1; i <= p->n; i++) {
-			res += printf ("%d: %Lf %Lf %d %d\n", i, cur->x, cur->y, cur->pic_x, cur->pic_y);
+			res += printf ("%d: %lf %lf %d %d\n", i, cur->x, cur->y, cur->pic_x, cur->pic_y);
 			cur = cur->next;
 		}
 	return res;
@@ -170,12 +170,12 @@ coor * Coor_init (char * arg) {
 			printf ("Coor_init: fscanf error\n");
 			exit (3);
 		}
-		if (fscanf (in, "%llf%llf%llf%llf%llf%llf%llf%llf", &(res->x1), &(res->y1), &(res->x2), &(res->y2), &(res->x3), &(res->y3), &(res->x4), &(res->y4)) != 8) {
+		if (fscanf (in, "%lf%lf%lf%lf%lf%lf%lf%lf", &(res->x1), &(res->y1), &(res->x2), &(res->y2), &(res->x3), &(res->y3), &(res->x4), &(res->y4)) != 8) {
 			printf ("Coor_init: fscanf error\n");
 			exit (3);
 		} 
-		res->lenght_left = sqrt ((res->x1 - res->x2)*(res->x1 - res->x2) + (res->y1 - res->y2)*(res->y1 - res->y2)*(cos(res->x1)+cos(res->x2))*(cos(res->x1)+cos(res->x2))/4);
-		res->lenght_bot = sqrt ((res->x2 - res->x4)*(res->x2 - res->x4) + (res->y2 - res->y4)*(res->y2 - res->y4)*(cos(res->x4)+cos(res->x2))*(cos(res->x4)+cos(res->x2))/4);
+		res->lenght_left = sqrt ((res->x1 - res->x2)*(res->x1 - res->x2) + (res->y1 - res->y2)*(res->y1 - res->y2));
+		res->lenght_top = sqrt ((res->x1 - res->x3)*(res->x1 - res->x3) + (res->y1 - res->y3)*(res->y1 - res->y3));
 		//printf ("	lenght_top: %lf\n	lenght_left: %lf\n", res->lenght_top, res->lenght_left);
 		free (dir);
 	return res;
@@ -190,16 +190,15 @@ void point_to_bmp_coor (track_point * point, coor * Coor) {
 			printf ("point_to_bmp_coor: Coor doesn't exist\n");
 			exit (1);
 		}
-	long double l1 = sqrtl ((Coor->x1 - point->x)*(Coor->x1 - point->x) + (Coor->y1 - point->y)*(Coor->y1 - point->y)*(cos(Coor->x1)+cos(point->x))*(cos(Coor->x1)+cos(point->x))/4);
-	long double l2 = sqrtl ((Coor->x2 - point->x)*(Coor->x2 - point->x) + (Coor->y2 - point->y)*(Coor->y2 - point->y)*(cos(Coor->x2)+cos(point->x))*(cos(Coor->x2)+cos(point->x))/4);
-	long double l4 = sqrtl ((Coor->x4 - point->x)*(Coor->x4 - point->x) + (Coor->y4 - point->y)*(Coor->y4 - point->y)*(cos(Coor->x4)+cos(point->x))*(cos(Coor->x4)+cos(point->x))/4);
+	double l1 = sqrt ((Coor->x1 - point->x)*(Coor->x1 - point->x) + (Coor->y1 - point->y)*(Coor->y1 - point->y));
+	double l2 = sqrt ((Coor->x2 - point->x)*(Coor->x2 - point->x) + (Coor->y2 - point->y)*(Coor->y2 - point->y));
+	double l3 = sqrt ((Coor->x3 - point->x)*(Coor->x3 - point->x) + (Coor->y3 - point->y)*(Coor->y3 - point->y));
 	double p1 = (Coor->lenght_left + l1 + l2)/2;
-	double p2 = (Coor->lenght_bot + l2 + l4)/2;
+	double p2 = (Coor->lenght_top + l1 + l3)/2;
 	double s1 = sqrt(p1*(p1 - Coor->lenght_left)*(p1 - l1)*(p1 - l2));
-	double s2 = sqrt(p2*(p2 - Coor->lenght_bot)*(p2 - l2)*(p2 - l4));
-		//printf ("bmp:\n	l1: %lf l2: %lf l4: %lf\n	p1: %lf p2: %lf\n	s1: %lf s2: %lf\n", l1, l2, l4, p1, p2, s1, s2);
-		point->pic_x = 2 * s1 * Coor->width / Coor->lenght_left / Coor->lenght_bot;
-		point->pic_y = 2 * s2 * Coor->height / Coor->lenght_bot / Coor->lenght_left;
+	double s2 = sqrt(p2*(p2 - Coor->lenght_top)*(p2 - l1)*(p2 - l3));
+		point->pic_x = (2*s1/Coor->lenght_left)/Coor->lenght_top * Coor->width;
+		point->pic_y = Coor->height - (2*s2/Coor->lenght_top)/Coor->lenght_left * Coor->height;
 	return;
 }
 
@@ -217,7 +216,7 @@ step * Step_init (coor * Coor) {
 		Step->up_y = (Coor->y1 - Coor->y2) / Coor->height;
 		Step->right_x = (Coor->x4 - Coor->x2) / Coor->width;
 		Step->right_y = (Coor->y4 - Coor->y2) / Coor->width;
-		printf ("\n	up_x: %llf	up_y: %llf\n	right_x: %llf	right_y: %llf\n\n", Step->up_x, Step->up_y, Step->right_x, Step->right_y);
+		printf ("\n	up_x: %lf	up_y: %lf\n	right_x: %lf	right_y: %lf\n\n", Step->up_x, Step->up_y, Step->right_x, Step->right_y);
 	return Step;
 }
 
@@ -421,8 +420,6 @@ int main (int argc, char * argv[]) {
 		printf ("%s\n", bmp_name);
 		strcat (new_bmp_name, argv[1]);
 		strcat (new_bmp_name, "/test_1.bmp");
-<<<<<<< HEAD
-=======
 	/*int argument = atoi (argv[1]);
 		switch (argument) {
 			case 1:
@@ -444,7 +441,6 @@ int main (int argc, char * argv[]) {
 					printf ("wrong arg\n");
 				return -2;
 		}*/
->>>>>>> 63b350f124a53eda9c481d400eeb4ac6a53e4667
 		
 	FILE * tmp = fopen ("indexRequest.txt", "r");
 		if (tmp == NULL) {
@@ -492,7 +488,7 @@ int main (int argc, char * argv[]) {
 	char date[32];
 	char time[32];
 	char IMEI[32];
-	long double x, y;
+	double x, y;
 	int l;
 	list * points = List_init ();
 	char ** string = (char **) malloc (sizeof(char *) * count_files);
@@ -505,7 +501,7 @@ int main (int argc, char * argv[]) {
 			for (j=0; j<l; j++)
 				if (string[i][j] == '_')
 					string[i][j] = ' ';
-			sscanf (string[i], "%s%s%s%Lf%Lf", IMEI, date, time, &x, &y);
+			sscanf (string[i], "%s%s%s%lf%lf", IMEI, date, time, &x, &y);
 			push_point (points, date, time, IMEI, x, y);
 			fclose (in);
 		}

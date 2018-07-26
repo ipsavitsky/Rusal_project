@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include <QList>
 #include <QMainWindow>
 #include <QGraphicsScene>
 
@@ -29,6 +29,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene = new QGraphicsScene(this);
+    QList<QGraphicsScene*> scenes;
 };
 
 

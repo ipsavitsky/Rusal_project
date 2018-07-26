@@ -21,13 +21,13 @@ MainWindow::MainWindow(QWidget *parent) :
     if(!bin.entryList().contains("database"))
         errors.append("There is no database installed\n");
     if(!bin.entryList().contains("fste.out"))
-        errors.append("There is no fste.out");
+        errors.append("There is no fste.out installed\n");
     for(int i = 0; i < resdir.count(); i++){
         QDir curRes("./resources/"+resdir.at(i));
         if(!curRes.entryList().contains("test.bmp"))
-            errors.append("There is no test.bmp in " + resources.entryList().at(i) + "resources folder \n");
+            errors.append("There is no test.bmp in " + resources.entryList().at(i) + " resources folder \n");
         if(!curRes.entryList().contains("coor.txt"))
-            errors.append("There is no coor.txt in " + resources.entryList().at(i) + "resources folder \n");
+            errors.append("There is no coor.txt in " + resources.entryList().at(i) + " resources folder \n");
     }
     if(errors != "")
         QMessageBox::critical(this, "ERROR", errors);
@@ -35,9 +35,26 @@ MainWindow::MainWindow(QWidget *parent) :
     ui -> handler -> append("Welcome to the control centre!");
     //ui -> statusBar -> showMessage("0");
     QImage logo("./logo.bmp");
+    ui -> map -> setDragMode(QGraphicsView::ScrollHandDrag);
+    ui -> map -> setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    ui -> map -> setAlignment(Qt::AlignCenter);
     scene -> addPixmap(QPixmap::fromImage(logo));
     ui -> map -> setScene(scene);
+    //qDebug() << "logo set";
+    for(int i = 0; i < resdir.count(); i++){
+        scenes.append(new QGraphicsScene);
+    }
+    //qDebug() << scenes.count() << " scenes malloced";
     ui -> comboBox -> addItems(resdir);
+    for(int i = 0; i < scenes.count(); i++){
+        QImage curmap("./resources/" + resdir.at(i) + "/test_1.bmp");
+        //qDebug() << "image added: " << "./resources" + resdir.at(i) + "/test_1.bmp";
+        QGraphicsPixmapItem *curitem = new QGraphicsPixmapItem;
+        curitem -> setPixmap(QPixmap::fromImage(curmap));
+        //qDebug() << "QGraphicsPixmapItem constructed...";
+        scenes.at(i) -> addItem(curitem);
+        //qDebug() << "item added to the scene #" << i;
+    }
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer -> start(500);
@@ -62,19 +79,26 @@ void MainWindow::on_clr_button_clicked()
 void MainWindow::update(){
     //QDir resources("./resources");
     QString curItem = ui -> comboBox -> currentText();
-    QGraphicsItem *item = scene -> items().at(0);
+    /*QGraphicsItem *item = scene -> items().at(0);
     scene -> removeItem(item);
     delete item;
     QImage map("./resources/"+curItem+"/test_1.bmp");
-    scene -> addPixmap(QPixmap::fromImage(map));
-    ui -> map -> fitInView(scene -> sceneRect(), Qt::KeepAspectRatio);
-    ui -> map -> setScene(scene);
+    QGraphicsPixmapItem *mapItem = new QGraphicsPixmapItem;
+    mapItem ->setPixmap(QPixmap::fromImage(map));
+    //mapItem -> setFlags(QGraphicsItem::ItemIsMovable);
+    scene -> addItem(mapItem);*/
+    //scene -> addPixmap(QPixmap::fromImage(map));
+    int mapIndex = ui -> comboBox -> currentIndex();
+    ui -> map -> fitInView(scenes.at(mapIndex) -> sceneRect(), Qt::KeepAspectRatio);
+    //ui -> map -> updateGeometry();
+    ui -> map -> setScene(scenes.at(mapIndex));
     //qDebug() << "scene set";
     if(ui -> RTUpdates -> isChecked()){
         realTimeProcess();
     }
     handleErr();
     system("./database");
+
     QString prompt("./fste.out ./resources/"+curItem);
     QByteArray ba = prompt.toLatin1();
     const char *c_str = ba.data();
